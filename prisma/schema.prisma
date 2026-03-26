@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -10,4 +5,166 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+enum Role {
+  admin
+  member
+}
+
+enum AccountType {
+  free
+  basic
+  standard
+  premium
+}
+
+enum appLogLevel {
+  error
+  warning
+  info
+  debug
+}
+
+enum appEnviornment {
+  prod
+  uat
+  stagging
+  dev
+}
+
+enum errorStatus {
+  open
+  resolved
+  ignored
+}
+
+enum alertChannel {
+  slack
+  email
+  gmail
+  whatsapp
+  pushNotification
+}
+
+enum sdkPlatform {
+  node
+  python
+  springboot
+}
+
+model Account {
+  id                     Int         @id @default(autoincrement())
+  username               String      @unique
+  fullName               String
+  email                  String      @unique
+  password               String
+  role                   Role
+  verificationCode       Int?
+  isVerifiedAccount      Boolean     @default(false)
+  verificationCodeExpiry DateTime?
+  accountType            AccountType @default(free)
+  createdAt              DateTime    @default(now())
+  image                  Json?
+  usageLimit             String?
+
+  apps Apps[]
+}
+
+model Apps {
+  id        Int    @id @default(autoincrement())
+  accountId Int
+  appName   String
+  appId     String @unique
+  apiKey    String @unique
+
+  isFree    Boolean @default(true)
+  maxLimit  String?
+  usedLimit String?
+
+  createdAt DateTime @default(now())
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  logs          AppLogs[]
+  errorGroups   ErrorGroups[]
+  alerts        Alerts[]
+  releases      AppReleases[]
+  sdkEvents     SdkEvents[]
+  affectedUsers AffectedUsers[]
+}
+
+model AppLogs {
+  id             Int            @id @default(autoincrement())
+  appId          Int
+  level          appLogLevel
+  message        String
+  stackTrace     String?
+  fileName       String?
+  lineNo         String?
+  enviornment    appEnviornment
+  timeStamps     DateTime       @default(now())
+  releaseVersion String?
+  sessionId      String?
+  metaData       Json?
+
+  app Apps @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  errorGroupId Int?
+  errorGroup   ErrorGroups? @relation(fields: [errorGroupId], references: [id])
+}
+
+model ErrorGroups {
+  id          Int         @id @default(autoincrement())
+  appId       Int
+  fingerprint String
+  firstSeen   DateTime    @default(now())
+  lastSeen    DateTime    @updatedAt
+  occurence   Int         @default(1)
+  status      errorStatus @default(open)
+
+  app Apps @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  logs          AppLogs[]
+  affectedUsers AffectedUsers[]
+}
+
+model Alerts {
+  id       Int          @id @default(autoincrement())
+  message  String
+  appId    Int
+  channel  alertChannel
+  isActive Boolean      @default(true)
+
+  app Apps @relation(fields: [appId], references: [id], onDelete: Cascade)
+}
+
+model AppReleases {
+  id       Int      @id @default(autoincrement())
+  appId    Int
+  version  String
+  deployAt DateTime @default(now())
+
+  app Apps @relation(fields: [appId], references: [id], onDelete: Cascade)
+}
+
+model SdkEvents {
+  id         Int         @id @default(autoincrement())
+  appId      Int
+  sdkVersion String
+  platform   sdkPlatform
+  lastSeen   DateTime    @default(now())
+
+  app Apps @relation(fields: [appId], references: [id], onDelete: Cascade)
+}
+
+model AffectedUsers {
+  id           Int      @id @default(autoincrement())
+  appId        Int
+  errorGroupId Int
+  userId       String
+  occurredAt   DateTime @default(now())
+
+  app        Apps        @relation(fields: [appId], references: [id], onDelete: Cascade)
+  errorGroup ErrorGroups @relation(fields: [errorGroupId], references: [id], onDelete: Cascade)
 }
