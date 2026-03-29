@@ -18,13 +18,13 @@ const accountsData = [
         {
           paidStatus: false,
           freePlanEnabled: true,
-          PaidType: ACCOUNT_TYPES.FREE, // For free accounts
+          PaidType: ACCOUNT_TYPES.FREE, 
           PaidMaxAppLimits: 3,
           startDate: new Date('2026-03-29T00:00:00.000Z'),
           endDate: new Date('2026-04-29T00:00:00.000Z'),
           renewalData: new Date('2026-04-29T00:00:00.000Z'),
           autoRenew: false,
-          lastPaymentId: 0, // <--- must provide something
+          lastPaymentId: 0, 
         },
       ],
     },
@@ -48,7 +48,7 @@ const accountsData = [
           endDate: new Date('2026-04-29T00:00:00.000Z'),
           renewalData: new Date('2026-04-29T00:00:00.000Z'),
           autoRenew: false,
-          lastPaymentId: 0, // <--- required
+          lastPaymentId: 0, 
         },
       ],
     },
