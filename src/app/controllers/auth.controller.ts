@@ -1,4 +1,3 @@
-// src/app/controllers/auth.controller.ts
 import { Request, Response } from 'express'
 
 export class AuthController {
