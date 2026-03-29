@@ -1,7 +1,7 @@
 import rateLimit from 'express-rate-limit'
-import { LimiterTime, rateLimitErrorMessage } from '../constants/constants'
+import { LimiterTime, rateLimitErrorMessage, SERVER_ENV } from '../constants/constants'
 
-const isProduction = process.env.NODE_ENV === 'production'
+const isProduction = process.env.NODE_ENV === SERVER_ENV.PRODUCTION
 
 const limiter = rateLimit({
   windowMs: LimiterTime,
