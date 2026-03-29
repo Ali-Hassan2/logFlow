@@ -52,31 +52,66 @@ enum sdkPlatform {
   springboot
 }
 
+enum PaymentStatus {
+  success
+  failed
+  pending
+  refunded
+}
+
 model Account {
-  id                     Int         @id @default(autoincrement())
-  username               String      @unique
+  id                     Int       @id @default(autoincrement())
+  username               String    @unique
   fullName               String
-  email                  String      @unique
+  email                  String    @unique
   password               String
   role                   Role
   verificationCode       Int?
-  isVerifiedAccount      Boolean     @default(false)
+  isVerifiedAccount      Boolean   @default(false)
   verificationCodeExpiry DateTime?
-  accountType            AccountType @default(free)
-  createdAt              DateTime    @default(now())
+  createdAt              DateTime  @default(now())
   image                  Json?
   usageLimit             String?
 
-  apps Apps[]
+  apps                 Apps[]
+  accountSubscriptions accountSubscription[]
+}
+
+model accountSubscription {
+  id               Int         @id @default(autoincrement())
+  accountId        Int
+  paidStatus       Boolean
+  freePlanEnabled  Boolean
+  PaidType         AccountType @default(free)
+  PaidMaxAppLimits Int
+  startDate        DateTime
+  endDate          DateTime
+  renewalData      DateTime
+  autoRenew        Boolean
+  lastPaymentId    Int
+
+  account  Account    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  payments Payments[]
+}
+
+model Payments {
+  id             Int           @id @default(autoincrement())
+  subscriptionId Int
+  amount         Float
+  currency       String
+  paymentMethod  String
+  status         PaymentStatus
+  createdAt      DateTime      @default(now())
+
+  subscription accountSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 }
 
 model Apps {
-  id        Int    @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
   accountId Int
   appName   String
-  appId     String @unique
-  apiKey    String @unique
-
+  appId     String  @unique
+  apiKey    String  @unique
   isFree    Boolean @default(true)
   maxLimit  String?
   usedLimit String?
